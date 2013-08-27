@@ -4,6 +4,9 @@
   <property name="libs" location="libs"/>
   <property name="build" location="build"/>
   <property name="dist"  location="dist"/>
+  <property environment="env"/>
+  <property name="env.ROS_DISTRO" value="groovy"/>
+  <property name="env.ROS_PACKAGE_PATH" value="/opt/ros/${env.ROS_DISTRO}/share"/>
 
   <path id="project.class.path">
     <pathelement path="${classpath}"/>
@@ -12,8 +15,8 @@
     </fileset>
   </path>
 
-  <target name="init" depends="init.xmlrpc, init.ros_bootstrap"/>
-  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap"/>
+  <target name="init" depends="init.xmlrpc, init.ros_bootstrap, init.ros_messages"/>
+  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap, compile.ros_messages"/>
 
   <target name="init.xmlrpc">
     <tstamp/>
@@ -34,7 +37,30 @@
       <classpath refid="project.class.path"/>
     </javac>
   </target>
-  
+
+  <target name="init.ros_messages">
+    <tstamp/>
+    <mkdir dir="${build}/ros_messages"/>
+  </target>
+  <target name="generate.ros_messages" depends="init.ros_messages, compile.ros_bootstrap">
+    <java classname="org.ros.internal.message.GenerateInterfaces">
+      <arg value="${env.ROS_PACKAGE_PATH}"/>
+      <arg value="${build}/ros_messages"/>
+      <classpath>
+        <path refid="project.class.path"/>
+        <pathelement path="${build}/ros_bootstrap"/>
+      </classpath>
+    </java>
+  </target>
+  <target name="compile.ros_messages" depends="generate.ros_messages">
+    <javac srcdir="${build}/ros_messages" destdir="${build}/ros_messages">
+      <classpath>
+        <path refid="project.class.path"/>
+        <pathelement path="${build}/ros_bootstrap"/>
+      </classpath>
+    </javac>
+  </target>
+
 <!--  <target name="dist" depends="compile">
     <mkdir dir="${dist}/lib"/>
     <jar jarfile="${dist}/lib/xmlrpc.jar" basedir="${build}" includes="**/*.class" update="true"/>

@@ -154,10 +154,13 @@ public class GenerateInterfaces {
 
   public static void main(String[] args) {
     List<String> arguments = Lists.newArrayList(args);
+    String rosPackagePath = System.getenv(EnvironmentVariables.ROS_PACKAGE_PATH);
+    if (arguments.size() > 0) {
+      rosPackagePath = arguments.remove(0);
+    }
     if (arguments.size() == 0) {
       arguments.add(".");
     }
-    String rosPackagePath = System.getenv(EnvironmentVariables.ROS_PACKAGE_PATH);
     Collection<File> packagePath = Lists.newArrayList();
     for (String path : rosPackagePath.split(File.pathSeparator)) {
       File packageDirectory = new File(path);

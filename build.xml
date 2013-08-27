@@ -1,5 +1,7 @@
-<project name="xmlrpc" basedir=".">
+<project name="ros-android" basedir=".">
   <property name="src" location="src"/>
+  <property name="res" location="res"/>
+  <property name="libs" location="libs"/>
   <property name="build" location="build"/>
   <property name="dist"  location="dist"/>
 
@@ -10,21 +12,24 @@
     </fileset>
   </path>
 
-  <target name="init">
+  <target name="init" depends="init.xmlrpc"/>
+  <target name="compile" depends="compile.xmlrpc"/>
+
+  <target name="init.xmlrpc">
     <tstamp/>
-    <mkdir dir="${build}"/>
+    <mkdir dir="${build}/xmlrpc"/>
   </target>
 
-  <target name="compile" depends="init">
-    <javac srcdir="${src}" destdir="${build}">
+  <target name="compile.xmlrpc" depends="init.xmlrpc">
+    <javac srcdir="${src}/xmlrpc" destdir="${build}/xmlrpc">
       <classpath refid="project.class.path"/>
     </javac>
   </target>
-
-  <target name="dist" depends="compile">
+  
+<!--  <target name="dist" depends="compile">
     <mkdir dir="${dist}/lib"/>
     <jar jarfile="${dist}/lib/xmlrpc.jar" basedir="${build}" includes="**/*.class" update="true"/>
-  </target>
+  </target>-->
 
   <target name="clean">
     <delete dir="${build}"/>

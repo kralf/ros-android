@@ -55,8 +55,9 @@ docs/manual/index.html
 How to build this project? 
 --------------------------
 
-Navigate to the source folders containing an ANT buildfile, e.g.
-PROJECT_DIR/build.xml, and type the following commands
+For an out-of-source build of this project, navigate to the root folder
+containing the ANT buildfile, e.g. PROJECT_DIR/build.xml, and type the
+following commands
 
   PROJECT_DIR/
   $ ant compile

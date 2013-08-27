@@ -1,6 +1,12 @@
+ros-android (0.1-6) lucid; urgency=low
+
+  * Added ROS Android library
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 16:37:00 +0100
+
 ros-android (0.1-5) lucid; urgency=low
 
-  * Added ros Java library
+  * Added ROS Java library
 
  -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 15:26:00 +0100
 

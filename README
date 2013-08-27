@@ -1,4 +1,4 @@
-BUILDING WITH ANT
+BUILDING ANDROID PROJECTS WITH ANT
 
 What is ANT? 
 ------------
@@ -55,13 +55,14 @@ docs/manual/index.html
 How to build this project? 
 --------------------------
 
-For an out-of-source build of this project, navigate to the root folder
-containing the ANT buildfile, e.g. PROJECT_DIR/build.xml, and type the
-following commands
+First, locate your Android SDK root directory, e.g., SDK_DIR. For an
+out-of-source build of this project, navigate to the directory containing
+the ANT buildfile, e.g., PROJECT_DIR/build.xml, and type the following
+commands
 
   PROJECT_DIR/
-  $ ant compile
-  $ ant dist
+  $ SDK_DIR/tools/android update project
+  $ ant [debug|release]
 
 The compiled Java classes will be created under the build directory
 PROJECT_DIR/build. Archives can be found under PROJECT_DIR/dist.

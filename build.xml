@@ -1,88 +1,92 @@
-<project name="ros-android" basedir=".">
-  <property name="src" location="src"/>
-  <property name="res" location="res"/>
-  <property name="libs" location="libs"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
-  <property environment="env"/>
-  <property name="env.ROS_DISTRO" value="groovy"/>
-  <property name="env.ROS_PACKAGE_PATH" value="/opt/ros/${env.ROS_DISTRO}/share"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="." default="help">
 
-  <path id="project.class.path">
-    <pathelement path="${classpath}"/>
-    <fileset dir="libs">
-      <include name="**/*.jar"/>
-    </fileset>
-  </path>
+    <!-- The local.properties file is created and updated by the 'android' tool.
+         It contains the path to the SDK. It should *NOT* be checked into
+         Version Control Systems. -->
+    <property file="local.properties" />
 
-  <target name="init" depends="init.xmlrpc, init.ros_bootstrap, init.ros_messages, init.ros"/>
-  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap, compile.ros_messages, compile.ros"/>
+    <!-- The ant.properties file can be created by you. It is only edited by the
+         'android' tool to add properties to it.
+         This is the place to change some Ant specific build properties.
+         Here are some properties you may want to change/update:
 
-  <target name="init.xmlrpc">
-    <tstamp/>
-    <mkdir dir="${build}/xmlrpc"/>
-  </target>
-  <target name="compile.xmlrpc" depends="init.xmlrpc">
-    <javac srcdir="${src}/xmlrpc" destdir="${build}/xmlrpc">
-      <classpath refid="project.class.path"/>
-    </javac>
-  </target>
+         source.dir
+             The name of the source directory. Default is 'src'.
+         out.dir
+             The name of the output directory. Default is 'bin'.
 
-  <target name="init.ros_bootstrap">
-    <tstamp/>
-    <mkdir dir="${build}/ros_bootstrap"/>
-  </target>
-  <target name="compile.ros_bootstrap" depends="init.ros_bootstrap">
-    <javac srcdir="${src}/ros_bootstrap" destdir="${build}/ros_bootstrap">
-      <classpath refid="project.class.path"/>
-    </javac>
-  </target>
+         For other overridable properties, look at the beginning of the rules
+         files in the SDK, at tools/ant/build.xml
 
-  <target name="init.ros_messages">
-    <tstamp/>
-    <mkdir dir="${build}/ros_messages"/>
-  </target>
-  <target name="generate.ros_messages" depends="init.ros_messages, compile.ros_bootstrap">
-    <java classname="org.ros.internal.message.GenerateInterfaces">
-      <arg value="${env.ROS_PACKAGE_PATH}"/>
-      <arg value="${build}/ros_messages"/>
-      <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/ros_bootstrap"/>
-      </classpath>
-    </java>
-  </target>
-  <target name="compile.ros_messages" depends="generate.ros_messages">
-    <javac srcdir="${build}/ros_messages" destdir="${build}/ros_messages">
-      <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/ros_bootstrap"/>
-      </classpath>
-    </javac>
-  </target>
+         Properties related to the SDK location or the project target should
+         be updated using the 'android' tool with the 'update' action.
 
-  <target name="init.ros">
-    <tstamp/>
-    <mkdir dir="${build}/ros"/>
-  </target>
-  <target name="compile.ros" depends="init.ros, compile.ros_bootstrap, compile.ros_messages, compile.xmlrpc">
-    <javac srcdir="${src}/ros" destdir="${build}/ros">
-      <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/xmlrpc"/>
-        <pathelement path="${build}/ros_bootstrap"/>
-        <pathelement path="${build}/ros_messages"/>
-      </classpath>
-    </javac>
-  </target>
-  
-<!--  <target name="dist" depends="compile">
-    <mkdir dir="${dist}/lib"/>
-    <jar jarfile="${dist}/lib/xmlrpc.jar" basedir="${build}" includes="**/*.class" update="true"/>
-  </target>-->
+         This file is an integral part of the build system for your
+         application and should be checked into Version Control Systems.
 
-  <target name="clean">
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
-  </target>
+         -->
+    <property file="ant.properties" />
+
+    <!-- if sdk.dir was not set from one of the property file, then
+         get it from the ANDROID_HOME env var.
+         This must be done before we load project.properties since
+         the proguard config can use sdk.dir -->
+    <property environment="env" />
+    <condition property="sdk.dir" value="${env.ANDROID_HOME}">
+        <isset property="env.ANDROID_HOME" />
+    </condition>
+
+    <!-- The project.properties file is created and updated by the 'android'
+         tool, as well as ADT.
+
+         This contains project specific properties such as project target, and library
+         dependencies. Lower level build properties are stored in ant.properties
+         (or in .classpath for Eclipse projects).
+
+         This file is an integral part of the build system for your
+         application and should be checked into Version Control Systems. -->
+    <loadproperties srcFile="project.properties" />
+
+    <!-- quick check on sdk.dir -->
+    <fail
+            message="sdk.dir is missing. Make sure to generate local.properties using 'android update project' or to inject it through the ANDROID_HOME environment variable."
+            unless="sdk.dir"
+    />
+
+    <!--
+        Import per project custom build rules if present at the root of the project.
+        This is the place to put custom intermediary targets such as:
+            -pre-build
+            -pre-compile
+            -post-compile (This is typically used for code obfuscation.
+                           Compiled code location: ${out.classes.absolute.dir}
+                           If this is not done in place, override ${out.dex.input.absolute.dir})
+            -post-package
+            -post-build
+            -pre-clean
+    -->
+    <import file="custom_rules.xml" optional="true" />
+
+    <!-- Import the actual build file.
+
+         To customize existing targets, there are two options:
+         - Customize only one target:
+             - copy/paste the target into this file, *before* the
+               <import> task.
+             - customize it to your needs.
+         - Customize the whole content of build.xml
+             - copy/paste the content of the rules files (minus the top node)
+               into this file, replacing the <import> task.
+             - customize to your needs.
+
+         ***********************
+         ****** IMPORTANT ******
+         ***********************
+         In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
+         in order to avoid having your file be overridden by tools such as "android update project"
+    -->
+    <!-- version-tag: 1 -->
+    <import file="${sdk.dir}/tools/ant/build.xml" />
+
 </project>

@@ -1,3 +1,9 @@
+ros-android (0.1-3) lucid; urgency=low
+
+  * Added ros_bootstrap classes
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 14:22:00 +0100
+
 ros-android (0.1-2) lucid; urgency=low
 
   * Modified structure to accomodate other libraries

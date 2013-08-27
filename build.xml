@@ -12,16 +12,25 @@
     </fileset>
   </path>
 
-  <target name="init" depends="init.xmlrpc"/>
-  <target name="compile" depends="compile.xmlrpc"/>
+  <target name="init" depends="init.xmlrpc, init.ros_bootstrap"/>
+  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap"/>
 
   <target name="init.xmlrpc">
     <tstamp/>
     <mkdir dir="${build}/xmlrpc"/>
   </target>
-
   <target name="compile.xmlrpc" depends="init.xmlrpc">
     <javac srcdir="${src}/xmlrpc" destdir="${build}/xmlrpc">
+      <classpath refid="project.class.path"/>
+    </javac>
+  </target>
+
+  <target name="init.ros_bootstrap">
+    <tstamp/>
+    <mkdir dir="${build}/ros_bootstrap"/>
+  </target>
+  <target name="compile.ros_bootstrap" depends="init.ros_bootstrap">
+    <javac srcdir="${src}/ros_bootstrap" destdir="${build}/ros_bootstrap">
       <classpath refid="project.class.path"/>
     </javac>
   </target>

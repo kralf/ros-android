@@ -15,8 +15,8 @@
     </fileset>
   </path>
 
-  <target name="init" depends="init.xmlrpc, init.ros_bootstrap, init.ros_messages"/>
-  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap, compile.ros_messages"/>
+  <target name="init" depends="init.xmlrpc, init.ros_bootstrap, init.ros_messages, init.ros"/>
+  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap, compile.ros_messages, compile.ros"/>
 
   <target name="init.xmlrpc">
     <tstamp/>
@@ -61,6 +61,21 @@
     </javac>
   </target>
 
+  <target name="init.ros">
+    <tstamp/>
+    <mkdir dir="${build}/ros"/>
+  </target>
+  <target name="compile.ros" depends="init.ros, compile.ros_bootstrap, compile.ros_messages, compile.xmlrpc">
+    <javac srcdir="${src}/ros" destdir="${build}/ros">
+      <classpath>
+        <path refid="project.class.path"/>
+        <pathelement path="${build}/xmlrpc"/>
+        <pathelement path="${build}/ros_bootstrap"/>
+        <pathelement path="${build}/ros_messages"/>
+      </classpath>
+    </javac>
+  </target>
+  
 <!--  <target name="dist" depends="compile">
     <mkdir dir="${dist}/lib"/>
     <jar jarfile="${dist}/lib/xmlrpc.jar" basedir="${build}" includes="**/*.class" update="true"/>

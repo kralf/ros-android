@@ -1,0 +1,5 @@
+ros-android (0.1-1) lucid; urgency=low
+
+  * Initial commit with xmlrpc Java library
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 14:02:00 +0100

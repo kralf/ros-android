@@ -18,7 +18,6 @@ package org.ros.android;
 
 import com.google.common.base.Preconditions;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -35,7 +34,7 @@ import java.net.URISyntaxException;
 /**
  * @author damonkohler@google.com (Damon Kohler)
  */
-public abstract class RosActivity extends Activity {
+public abstract class Activity extends android.app.Activity {
 
   private static final int MASTER_CHOOSER_REQUEST_CODE = 0;
 
@@ -52,7 +51,7 @@ public abstract class RosActivity extends Activity {
       nodeMainExecutorService.addListener(new NodeMainExecutorServiceListener() {
         @Override
         public void onShutdown(NodeMainExecutorService nodeMainExecutorService) {
-          RosActivity.this.finish();
+          Activity.this.finish();
         }
       });
       startMasterChooser();
@@ -63,7 +62,7 @@ public abstract class RosActivity extends Activity {
     }
   };
 
-  protected RosActivity(String notificationTicker, String notificationTitle) {
+  protected Activity(String notificationTicker, String notificationTitle) {
     super();
     this.notificationTicker = notificationTicker;
     this.notificationTitle = notificationTitle;
@@ -103,9 +102,10 @@ public abstract class RosActivity extends Activity {
 
   /**
    * This method is called in a background thread once this {@link Activity} has
-   * been initialized with a master {@link URI} via the {@link MasterChooser}
-   * and a {@link NodeMainExecutorService} has started. Your {@link NodeMain}s
-   * should be started here using the provided {@link NodeMainExecutor}.
+   * been initialized with a master {@link URI} via the
+   * {@link MasterChooserActivity} and a {@link NodeMainExecutorService} has
+   * started. Your {@link NodeMain}s should be started here using the provided
+   * {@link NodeMainExecutor}.
    * 
    * @param nodeMainExecutor
    *          the {@link NodeMainExecutor} created for this {@link Activity}
@@ -116,7 +116,8 @@ public abstract class RosActivity extends Activity {
     Preconditions.checkState(getMasterUri() == null);
     // Call this method on super to avoid triggering our precondition in the
     // overridden startActivityForResult().
-    super.startActivityForResult(new Intent(this, MasterChooser.class), 0);
+    super.startActivityForResult(new Intent(this,
+      MasterChooserActivity.class), 0);
   }
 
   public URI getMasterUri() {
@@ -151,7 +152,7 @@ public abstract class RosActivity extends Activity {
         new AsyncTask<Void, Void, Void>() {
           @Override
           protected Void doInBackground(Void... params) {
-            RosActivity.this.init(nodeMainExecutorService);
+            Activity.this.init(nodeMainExecutorService);
             return null;
           }
         }.execute();

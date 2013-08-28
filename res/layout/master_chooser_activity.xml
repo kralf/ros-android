@@ -46,6 +46,6 @@
             android:layout_width="100dip"
             android:layout_height="wrap_content"
             android:onClick="cancelButtonClicked"
-            android:text="@string/cancel" />
+            android:text="@android:string/cancel" />
     </LinearLayout>
 </LinearLayout>

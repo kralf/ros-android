@@ -46,7 +46,7 @@ import java.util.List;
  * @author damonkohler@google.com (Damon Kohler)
  * @author munjaldesai@google.com (Munjal Desai)
  */
-public class MasterChooser extends Activity {
+public class MasterChooserActivity extends Activity {
 
   /**
    * The key with which the last used {@link URI} will be stored as a
@@ -66,7 +66,7 @@ public class MasterChooser extends Activity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.master_chooser);
+    setContentView(R.layout.master_chooser_activity);
     uriText = (EditText) findViewById(R.id.master_chooser_uri);
     // Get the URI from preferences and display it. Since only primitive types
     // can be saved in preferences the URI is stored as a string.
@@ -96,13 +96,13 @@ public class MasterChooser extends Activity {
       // If there is no text input then set it to the default URI.
       userUri = NodeConfiguration.DEFAULT_MASTER_URI.toString();
       uriText.setText(userUri);
-      Toast.makeText(MasterChooser.this, "Empty URI not allowed.", Toast.LENGTH_SHORT).show();
+      Toast.makeText(MasterChooserActivity.this, "Empty URI not allowed.", Toast.LENGTH_SHORT).show();
     }
     // Make sure the URI can be parsed correctly.
     try {
       new URI(userUri);
     } catch (URISyntaxException e) {
-      Toast.makeText(MasterChooser.this, "Invalid URI.", Toast.LENGTH_SHORT).show();
+      Toast.makeText(MasterChooserActivity.this, "Invalid URI.", Toast.LENGTH_SHORT).show();
       return;
     }
 

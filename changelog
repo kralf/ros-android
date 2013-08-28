@@ -1,3 +1,11 @@
+ros-android (0.1-13) lucid; urgency=low
+
+  * Renamed RosActivity to Activity
+  * Renamed MasterChooser to MasterChooserActivity
+  * Added MasterChooserDialogFragment implementation
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 28 Aug 2013 23:53:00 +0100
+
 ros-android (0.1-12) lucid; urgency=low
 
   * Added version numbers to archive filenames

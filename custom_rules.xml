@@ -4,7 +4,7 @@
   <property name="env.ROS_PACKAGE_PATH" value="/opt/ros/${env.ROS_DISTRO}/share"/>
   <property name="source.libs.absolute.dir" location="${source.dir}/.." />
 
-  <target name="-pre-build" depends="archive.xmlrpc, archive.ros_bootstrap, archive.ros_messages, archive.ros">
+  <target name="-pre-build" depends="xmlrpc.archive, ros_bootstrap.archive, ros_messages.archive, ros.archive">
     <path id="project.all.jars.path">
       <path path="${toString:project.all.jars.path}"/>
       <fileset dir="${jar.libs.absolute.dir}">
@@ -12,15 +12,15 @@
       </fileset>
     </path>
   </target>
-  <target name="-pre-clean" depends="clean.xmlrpc, clean.ros_bootstrap, clean.ros_messages, clean.ros">
+  <target name="-pre-clean" depends="xmlrpc.clean, ros_bootstrap.clean, ros_messages.clean, ros.clean">
     <delete dir="${out.absolute.dir}/libs"/>
   </target>
   
-  <target name="init.xmlrpc">
+  <target name="xmlrpc.init">
     <tstamp/>
     <mkdir dir="${out.absolute.dir}/libs/xmlrpc"/>
   </target>
-  <target name="compile.xmlrpc" depends="init.xmlrpc">
+  <target name="xmlrpc.compile" depends="xmlrpc.init">
     <javac srcdir="${source.libs.absolute.dir}/xmlrpc" destdir="${out.absolute.dir}/libs/xmlrpc">
       <classpath>
         <fileset dir="${jar.libs.absolute.dir}">
@@ -29,8 +29,10 @@
       </classpath>
     </javac>
   </target>
-  <target name="archive.xmlrpc" depends="compile.xmlrpc">
-    <jar jarfile="${jar.libs.absolute.dir}/xmlrpc.jar" update="true">
+  <target name="xmlrpc.archive" depends="xmlrpc.compile">
+    <xmlproperty file="${manifest.abs.file}" prefix="manifest" collapseAttributes="true"/>
+    <property name="xmlrpc.version" value="${manifest.manifest.android:versionName}"/>
+    <jar jarfile="${jar.libs.absolute.dir}/xmlrpc-${xmlrpc.version}.jar" update="true">
       <fileset dir="${out.absolute.dir}/libs/xmlrpc">
         <include name="**/*.class"/>
       </fileset>
@@ -39,16 +41,18 @@
       </fileset>
     </jar>
   </target>
-  <target name="clean.xmlrpc">
+  <target name="xmlrpc.clean">
     <delete dir="${out.absolute.dir}/libs/xmlrpc"/>
-    <delete file="${jar.libs.absolute.dir}/xmlrpc.jar"/>
+    <delete>
+      <fileset dir="${jar.libs.absolute.dir}" includes="xmlrpc-*.jar"/>
+    </delete>
   </target>
 
-  <target name="init.ros_bootstrap">
+  <target name="ros_bootstrap.init">
     <tstamp/>
     <mkdir dir="${out.absolute.dir}/libs/ros_bootstrap"/>
   </target>
-  <target name="compile.ros_bootstrap" depends="init.ros_bootstrap">
+  <target name="ros_bootstrap.compile" depends="ros_bootstrap.init">
     <javac srcdir="${source.libs.absolute.dir}/ros_bootstrap" destdir="${out.absolute.dir}/libs/ros_bootstrap">
       <classpath>
         <fileset dir="${jar.libs.absolute.dir}">
@@ -57,19 +61,23 @@
       </classpath>
     </javac>
   </target>
-  <target name="archive.ros_bootstrap" depends="compile.ros_bootstrap">
-    <jar jarfile="${jar.libs.absolute.dir}/ros_bootstrap.jar" basedir="${out.absolute.dir}/libs/ros_bootstrap" includes="**/*.class" update="true"/>
+  <target name="ros_bootstrap.archive" depends="ros_bootstrap.compile">
+    <xmlproperty file="${manifest.abs.file}" prefix="manifest" collapseAttributes="true"/>
+    <property name="ros_bootstrap.version" value="${manifest.manifest.android:versionName}"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros-bootstrap-${ros_bootstrap.version}.jar" basedir="${out.absolute.dir}/libs/ros_bootstrap" includes="**/*.class" update="true"/>
   </target>
-  <target name="clean.ros_bootstrap">
+  <target name="ros_bootstrap.clean">
     <delete dir="${out.absolute.dir}/libs/ros_bootstrap"/>
-    <delete file="${jar.libs.absolute.dir}/ros_bootstrap.jar"/>
+    <delete>
+      <fileset dir="${jar.libs.absolute.dir}" includes="ros-bootstrap-*.jar"/>
+    </delete>
   </target>
 
-  <target name="init.ros_messages">
+  <target name="ros_messages.init">
     <tstamp/>
     <mkdir dir="${out.absolute.dir}/libs/ros_messages"/>
   </target>
-  <target name="generate.ros_messages" depends="init.ros_messages, archive.ros_bootstrap">
+  <target name="ros_messages.generate" depends="ros_messages.init, ros_bootstrap.archive">
     <java classname="org.ros.internal.message.GenerateInterfaces">
       <arg value="${env.ROS_PACKAGE_PATH}"/>
       <arg value="${out.absolute.dir}/libs/ros_messages"/>
@@ -80,7 +88,7 @@
       </classpath>
     </java>
   </target>
-  <target name="compile.ros_messages" depends="generate.ros_messages">
+  <target name="ros_messages.compile" depends="ros_messages.generate">
     <javac srcdir="${out.absolute.dir}/libs/ros_messages" destdir="${out.absolute.dir}/libs/ros_messages">
       <classpath>
         <fileset dir="${jar.libs.absolute.dir}">
@@ -89,19 +97,23 @@
       </classpath>
     </javac>
   </target>
-  <target name="archive.ros_messages" depends="compile.ros_messages">
-    <jar jarfile="${jar.libs.absolute.dir}/ros_messages.jar" basedir="${out.absolute.dir}/libs/ros_messages" includes="**/*.class" update="true"/>
+  <target name="ros_messages.archive" depends="ros_messages.compile">
+    <xmlproperty file="${manifest.abs.file}" prefix="manifest" collapseAttributes="true"/>
+    <property name="ros_messages.version" value="${manifest.manifest.android:versionName}"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros-messages-${ros_messages.version}.jar" basedir="${out.absolute.dir}/libs/ros_messages" includes="**/*.class" update="true"/>
   </target>
-  <target name="clean.ros_messages">
+  <target name="ros_messages.clean">
     <delete dir="${out.absolute.dir}/libs/ros_messages"/>
-    <delete file="${jar.libs.absolute.dir}/ros_messages.jar"/>
+    <delete>
+      <fileset dir="${jar.libs.absolute.dir}" includes="ros-messages-*.jar"/>
+    </delete>
   </target>
 
-  <target name="init.ros">
+  <target name="ros.init">
     <tstamp/>
     <mkdir dir="${out.absolute.dir}/libs/ros"/>
   </target>
-  <target name="compile.ros" depends="init.ros, archive.ros_bootstrap, archive.ros_messages, archive.xmlrpc">
+  <target name="ros.compile" depends="ros.init, ros_bootstrap.archive, ros_messages.archive, xmlrpc.archive">
     <javac srcdir="${source.libs.absolute.dir}/ros" destdir="${out.absolute.dir}/libs/ros">
       <classpath>
         <fileset dir="${jar.libs.absolute.dir}">
@@ -110,11 +122,15 @@
       </classpath>
     </javac>
   </target>
-  <target name="archive.ros" depends="compile.ros">
-    <jar jarfile="${jar.libs.absolute.dir}/ros.jar" basedir="${out.absolute.dir}/libs/ros" includes="**/*.class" update="true"/>
+  <target name="ros.archive" depends="ros.compile">
+    <xmlproperty file="${manifest.abs.file}" prefix="manifest" collapseAttributes="true"/>
+    <property name="ros.version" value="${manifest.manifest.android:versionName}"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros-${ros.version}.jar" basedir="${out.absolute.dir}/libs/ros" includes="**/*.class" update="true"/>
   </target>
-  <target name="clean.ros">
+  <target name="ros.clean">
     <delete dir="${out.absolute.dir}/libs/ros"/>
-    <delete file="${jar.libs.absolute.dir}/ros.jar"/>
+    <delete>
+      <fileset dir="${jar.libs.absolute.dir}" includes="ros-*.jar"/>
+    </delete>
   </target>
 </project>

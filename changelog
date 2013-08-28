@@ -1,3 +1,10 @@
+ros-android (0.1-11) lucid; urgency=low
+
+  * Build fixes, Android library now compiles when built from other
+    Android projects
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 28 Aug 2013 11:04:00 +0100
+
 ros-android (0.1-10) lucid; urgency=low
 
   * More restructuring to fix build problems of other Android projects

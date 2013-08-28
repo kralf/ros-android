@@ -47,7 +47,9 @@
       <fileset dir="${build}/xmlrpc">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="${res}/xmlrpc"/>
+      <fileset dir="${src}/xmlrpc">
+        <include name="**/*.properties"/>
+      </fileset>
     </jar>
   </target>
 

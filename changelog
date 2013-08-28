@@ -1,3 +1,10 @@
+ros-android (0.1-10) lucid; urgency=low
+
+  * More restructuring to fix build problems of other Android projects
+    with dependencies on the Android library project
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 28 Aug 2013 10:33:00 +0100
+
 ros-android (0.1-9) lucid; urgency=low
 
   * Restructured resource directory to fix build problems of other Android

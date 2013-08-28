@@ -1,117 +1,126 @@
-<project name="ros-android" basedir=".">
-  <property name="src" location="src"/>
-  <property name="res" location="res"/>
-  <property name="libs" location="libs"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
+<project name="custom_rules" basedir=".">
   <property environment="env"/>
   <property name="env.ROS_DISTRO" value="groovy"/>
   <property name="env.ROS_PACKAGE_PATH" value="/opt/ros/${env.ROS_DISTRO}/share"/>
 
-  <path id="project.class.path">
-    <pathelement path="${classpath}"/>
-    <fileset dir="libs">
-      <include name="**/*.jar"/>
-    </fileset>
-  </path>
-
-  <target name="-pre-build" depends="compile"/>
-  <target name="-pre-compile" depends="archive">
+  <target name="-pre-build" depends="archive.xmlrpc, archive.ros_bootstrap, archive.ros_messages, archive.ros"/>
+  <target name="-pre-compile">
     <path id="project.all.jars.path">
       <path path="${toString:project.all.jars.path}"/>
-      <fileset dir="${jar.libs.dir}">
+      <fileset dir="${jar.libs.absolute.dir}">
         <include name="*.jar"/>
       </fileset>
-      <pathelement location="${build}/xmlrpc/xmlrpc.jar"/>
-      <pathelement location="${build}/ros_bootstrap/ros_bootstrap.jar"/>
-      <pathelement location="${build}/ros_messages/ros_messages.jar"/>
-      <pathelement location="${build}/ros/ros.jar"/>
     </path>
   </target>
+  <target name="-pre-clean" depends="clean.xmlrpc, clean.ros_bootstrap, clean.ros_messages, clean.ros">
+    <delete dir="${out.absolute.dir}/libs"/>
+  </target>
 
-  <target name="init" depends="init.xmlrpc, init.ros_bootstrap, init.ros_messages, init.ros"/>
-  <target name="compile" depends="compile.xmlrpc, compile.ros_bootstrap, compile.ros_messages, compile.ros"/>
-  <target name="archive" depends="archive.xmlrpc, archive.ros_bootstrap, archive.ros_messages, archive.ros"/>
-
+  
   <target name="init.xmlrpc">
     <tstamp/>
-    <mkdir dir="${build}/xmlrpc"/>
+    <mkdir dir="${out.absolute.dir}/libs/xmlrpc"/>
   </target>
   <target name="compile.xmlrpc" depends="init.xmlrpc">
-    <javac srcdir="${src}/xmlrpc" destdir="${build}/xmlrpc">
-      <classpath refid="project.class.path"/>
+    <javac srcdir="${source.absolute.dir}/xmlrpc" destdir="${out.absolute.dir}/libs/xmlrpc">
+      <classpath>
+        <pathelement path="${classpath}"/>
+        <fileset dir="${jar.libs.absolute.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
     </javac>
   </target>
   <target name="archive.xmlrpc" depends="compile.xmlrpc">
-    <jar jarfile="${build}/xmlrpc/xmlrpc.jar" update="true">
-      <fileset dir="${build}/xmlrpc">
+    <jar jarfile="${jar.libs.absolute.dir}/xmlrpc.jar" update="true">
+      <fileset dir="${out.absolute.dir}/libs/xmlrpc">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="${src}/xmlrpc">
+      <fileset dir="${source.absolute.dir}/xmlrpc">
         <include name="**/*.properties"/>
       </fileset>
     </jar>
   </target>
+  <target name="clean.xmlrpc">
+    <delete dir="${out.absolute.dir}/libs/xmlrpc"/>
+    <delete file="${jar.libs.absolute.dir}/xmlrpc.jar"/>
+  </target>
 
   <target name="init.ros_bootstrap">
     <tstamp/>
-    <mkdir dir="${build}/ros_bootstrap"/>
+    <mkdir dir="${out.absolute.dir}/libs/ros_bootstrap"/>
   </target>
   <target name="compile.ros_bootstrap" depends="init.ros_bootstrap">
-    <javac srcdir="${src}/ros_bootstrap" destdir="${build}/ros_bootstrap">
-      <classpath refid="project.class.path"/>
+    <javac srcdir="${source.absolute.dir}/ros_bootstrap" destdir="${out.absolute.dir}/libs/ros_bootstrap">
+      <classpath>
+        <pathelement path="${classpath}"/>
+        <fileset dir="${jar.libs.absolute.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
     </javac>
   </target>
   <target name="archive.ros_bootstrap" depends="compile.ros_bootstrap">
-    <jar jarfile="${build}/ros_bootstrap/ros_bootstrap.jar" basedir="${build}/ros_bootstrap" includes="**/*.class" update="true"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros_bootstrap.jar" basedir="${out.absolute.dir}/libs/ros_bootstrap" includes="**/*.class" update="true"/>
+  </target>
+  <target name="clean.ros_bootstrap">
+    <delete dir="${out.absolute.dir}/libs/ros_bootstrap"/>
+    <delete file="${jar.libs.absolute.dir}/ros_bootstrap.jar"/>
   </target>
 
   <target name="init.ros_messages">
     <tstamp/>
-    <mkdir dir="${build}/ros_messages"/>
+    <mkdir dir="${out.absolute.dir}/libs/ros_messages"/>
   </target>
-  <target name="generate.ros_messages" depends="init.ros_messages, compile.ros_bootstrap">
+  <target name="generate.ros_messages" depends="init.ros_messages, archive.ros_bootstrap">
     <java classname="org.ros.internal.message.GenerateInterfaces">
       <arg value="${env.ROS_PACKAGE_PATH}"/>
-      <arg value="${build}/ros_messages"/>
+      <arg value="${out.absolute.dir}/libs/ros_messages"/>
       <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/ros_bootstrap"/>
+        <pathelement path="${classpath}"/>
+        <fileset dir="${jar.libs.absolute.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
       </classpath>
     </java>
   </target>
   <target name="compile.ros_messages" depends="generate.ros_messages">
-    <javac srcdir="${build}/ros_messages" destdir="${build}/ros_messages">
+    <javac srcdir="${out.absolute.dir}/libs/ros_messages" destdir="${out.absolute.dir}/libs/ros_messages">
       <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/ros_bootstrap"/>
+        <pathelement path="${classpath}"/>
+        <fileset dir="${jar.libs.absolute.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
   <target name="archive.ros_messages" depends="compile.ros_messages">
-    <jar jarfile="${build}/ros_messages/ros_messages.jar" basedir="${build}/ros_messages" includes="**/*.class" update="true"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros_messages.jar" basedir="${out.absolute.dir}/libs/ros_messages" includes="**/*.class" update="true"/>
+  </target>
+  <target name="clean.ros_messages">
+    <delete dir="${out.absolute.dir}/libs/ros_messages"/>
+    <delete file="${jar.libs.absolute.dir}/ros_messages.jar"/>
   </target>
 
   <target name="init.ros">
     <tstamp/>
-    <mkdir dir="${build}/ros"/>
+    <mkdir dir="${out.absolute.dir}/libs/ros"/>
   </target>
-  <target name="compile.ros" depends="init.ros, compile.ros_bootstrap, compile.ros_messages, compile.xmlrpc">
-    <javac srcdir="${src}/ros" destdir="${build}/ros">
+  <target name="compile.ros" depends="init.ros, archive.ros_bootstrap, archive.ros_messages, archive.xmlrpc">
+    <javac srcdir="${source.absolute.dir}/ros" destdir="${out.absolute.dir}/libs/ros">
       <classpath>
-        <path refid="project.class.path"/>
-        <pathelement path="${build}/xmlrpc"/>
-        <pathelement path="${build}/ros_bootstrap"/>
-        <pathelement path="${build}/ros_messages"/>
+        <pathelement path="${classpath}"/>
+        <fileset dir="${jar.libs.absolute.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
       </classpath>
     </javac>
   </target>
   <target name="archive.ros" depends="compile.ros">
-    <jar jarfile="${build}/ros/ros.jar" basedir="${build}/ros" includes="**/*.class" update="true"/>
+    <jar jarfile="${jar.libs.absolute.dir}/ros.jar" basedir="${out.absolute.dir}/libs/ros" includes="**/*.class" update="true"/>
   </target>
-
-  <target name="clean">
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
+  <target name="clean.ros">
+    <delete dir="${out.absolute.dir}/libs/ros"/>
+    <delete file="${jar.libs.absolute.dir}/ros.jar"/>
   </target>
 </project>

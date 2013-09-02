@@ -1,12 +1,12 @@
 /*
  * Copyright (C) 2011 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,16 +16,25 @@
 
 package org.ros.android;
 
-/**
- * @author damonkohler@google.com (Damon Kohler)
- */
-public interface NodeMainExecutorServiceListener {
+import android.os.Bundle;
+import android.util.Log;
 
+/**
+ * Allows the user to configue the master {@link URI} and common node
+ * settings via a {@link PreferenceFragment}.
+ * 
+ * @author ralf.kaestner@gmail.com (Ralf Kaestner)
+ */
+public class PreferenceFragment
+  extends android.preference.PreferenceFragment {
+  
   /**
-   * @param nodeMainExecutorService the {@link NodeMainExecutorService}
-   * that was shut down
+   * The key with which the last used {@link URI} will be stored as a
+   * preference.
    */
-  public void onConnect(NodeMainExecutorService service);
-  public void onDisconnect(NodeMainExecutorService service);
-  public void onShutdown(NodeMainExecutorService service);
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    addPreferencesFromResource(org.ros.android.R.xml.ros_preferences);
+  }
 }

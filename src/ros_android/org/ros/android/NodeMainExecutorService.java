@@ -17,14 +17,18 @@
 package org.ros.android;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
+import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
-import android.os.Binder;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -39,6 +43,10 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeListener;
 import org.ros.node.NodeMain;
 import org.ros.node.NodeMainExecutor;
+import org.ros.node.Node;
+import org.ros.node.ConnectedNode;
+import org.ros.address.InetAddressFactory;
+import org.ros.namespace.NameResolver;
 
 import java.net.URI;
 import java.util.Collection;
@@ -46,18 +54,26 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
+ * @author ralf.kaestner@gmail.com (Ralf Kaestner)
  */
-public class NodeMainExecutorService extends Service implements NodeMainExecutor {
+public class NodeMainExecutorService
+  extends Service
+  implements NodeMainExecutor, NodeListener {
 
   private static final String TAG = "NodeMainExecutorService";
 
   // NOTE(damonkohler): If this is 0, the notification does not show up.
-  private static final int ONGOING_NOTIFICATION = 1;
+  private static final int SHUTDOWN_NOTIFICATION = 1;
+  private static final int STATUS_NOTIFICATION = 2;
 
-  static final String ACTION_START = "org.ros.android.ACTION_START_NODE_RUNNER_SERVICE";
-  static final String ACTION_SHUTDOWN = "org.ros.android.ACTION_SHUTDOWN_NODE_RUNNER_SERVICE";
-  static final String EXTRA_NOTIFICATION_TITLE = "org.ros.android.EXTRA_NOTIFICATION_TITLE";
-  static final String EXTRA_NOTIFICATION_TICKER = "org.ros.android.EXTRA_NOTIFICATION_TICKER";
+  public static final String ACTION_START = 
+    "org.ros.android.ACTION_START_NODE_RUNNER_SERVICE";
+  public static final String ACTION_SHUTDOWN = 
+    "org.ros.android.ACTION_SHUTDOWN_NODE_RUNNER_SERVICE";
+  public static final String EXTRA_NOTIFICATION_TITLE = 
+    "org.ros.android.EXTRA_NOTIFICATION_TITLE";
+  public static final String EXTRA_NOTIFICATION_TICKER =
+    "org.ros.android.EXTRA_NOTIFICATION_TICKER";
 
   private final NodeMainExecutor nodeMainExecutor;
   private final IBinder binder;
@@ -67,34 +83,46 @@ public class NodeMainExecutorService extends Service implements NodeMainExecutor
   private WifiLock wifiLock;
   private RosCore rosCore;
   private URI masterUri;
-
+  private String namespace;
+  
+  private PowerManager powerManager;
+  private NotificationManager notificationManager;
+  
+  private String notificationTitle;
+  private int notificationSmallIcon;
+  
   /**
    * Class for clients to access. Because we know this service always runs in
    * the same process as its clients, we don't need to deal with IPC.
    */
-  class LocalBinder extends Binder {
+  class Binder extends android.os.Binder {
     NodeMainExecutorService getService() {
       return NodeMainExecutorService.this;
     }
   }
-
+  
   public NodeMainExecutorService() {
     super();
     nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
-    binder = new LocalBinder();
-    listeners =
-        new ListenerGroup<NodeMainExecutorServiceListener>(
-            nodeMainExecutor.getScheduledExecutorService());
+    binder = new Binder();
+    listeners = new ListenerGroup<NodeMainExecutorServiceListener>(
+      nodeMainExecutor.getScheduledExecutorService());
   }
 
   @Override
   public void onCreate() {
-    PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+    powerManager = (PowerManager)getSystemService(POWER_SERVICE);
+    notificationManager = (NotificationManager)getSystemService(
+      NOTIFICATION_SERVICE);
+    
+    notificationSmallIcon = getApplicationContext().getApplicationInfo().icon;
+    
     wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
     wakeLock.acquire();
     int wifiLockType = WifiManager.WIFI_MODE_FULL;
     try {
-      wifiLockType = WifiManager.class.getField("WIFI_MODE_FULL_HIGH_PERF").getInt(null);
+      wifiLockType = WifiManager.class.getField(
+        "WIFI_MODE_FULL_HIGH_PERF").getInt(null);
     } catch (Exception e) {
       // We must be running on a pre-Honeycomb device.
       Log.w(TAG, "Unable to acquire high performance wifi lock.");
@@ -145,6 +173,42 @@ public class NodeMainExecutorService extends Service implements NodeMainExecutor
     stopSelf();
   }
 
+  public void connect(NodeMain nodeMain) {
+    new AsyncTask<NodeMain, Void, Void>() {
+      @Override
+      protected Void doInBackground(NodeMain... params) {
+        NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
+          InetAddressFactory.newNonLoopback().getHostAddress());
+        nodeConfiguration.setMasterUri(masterUri);
+        if (!namespace.isEmpty()) {
+          NameResolver resolver = NameResolver.newFromNamespace(namespace);
+          nodeConfiguration.setParentResolver(resolver);
+        }
+        
+        Collection<NodeListener> listeners = Lists.newArrayList();
+        listeners.add(NodeMainExecutorService.this);
+        NodeMainExecutorService.this.execute(params[0], nodeConfiguration,
+          listeners);
+        
+        return null;
+      }
+    }.execute(nodeMain);
+  }
+
+  public void disconnect(NodeMain nodeMain) {
+    new AsyncTask<NodeMain, Void, Void>() {
+      @Override
+      protected Void doInBackground(NodeMain... params) {
+        shutdownNodeMain(params[0]);
+        return null;
+      }
+    }.execute(nodeMain);
+  }
+
+  public void disconnect() {
+    shutdown();
+  }
+  
   public void addListener(NodeMainExecutorServiceListener listener) {
     listeners.add(listener);
   }
@@ -152,8 +216,10 @@ public class NodeMainExecutorService extends Service implements NodeMainExecutor
   private void signalOnShutdown() {
     listeners.signal(new SignalRunnable<NodeMainExecutorServiceListener>() {
       @Override
-      public void run(NodeMainExecutorServiceListener nodeMainExecutorServiceListener) {
-        nodeMainExecutorServiceListener.onShutdown(NodeMainExecutorService.this);
+      public void run(NodeMainExecutorServiceListener
+          nodeMainExecutorServiceListener) {
+        nodeMainExecutorServiceListener.onShutdown(
+          NodeMainExecutorService.this);
       }
     });
   }
@@ -169,30 +235,50 @@ public class NodeMainExecutorService extends Service implements NodeMainExecutor
     if (intent.getAction() == null) {
       return START_NOT_STICKY;
     }
-    if (intent.getAction().equals(ACTION_START)) {
+    else if (intent.getAction().equals(ACTION_START)) {
       Preconditions.checkArgument(intent.hasExtra(EXTRA_NOTIFICATION_TICKER));
       Preconditions.checkArgument(intent.hasExtra(EXTRA_NOTIFICATION_TITLE));
-      Intent notificationIntent = new Intent(this, NodeMainExecutorService.class);
+      Intent notificationIntent = new Intent(this,
+        NodeMainExecutorService.class);
       notificationIntent.setAction(NodeMainExecutorService.ACTION_SHUTDOWN);
-      PendingIntent pendingIntent = PendingIntent.getService(this, 0, notificationIntent, 0);
+      PendingIntent pendingIntent = PendingIntent.getService(this, 0,
+        notificationIntent, 0);
+      notificationTitle = intent.getStringExtra(EXTRA_NOTIFICATION_TITLE);
       Notification notification = new Notification.Builder(this)
-      	  .setSmallIcon(getApplicationContext().getApplicationInfo().icon)
-      	  .setTicker(intent.getStringExtra(EXTRA_NOTIFICATION_TICKER))
-      	  .setContentTitle(intent.getStringExtra(EXTRA_NOTIFICATION_TITLE))
-      	  .setContentText("Tap to shutdown.")
-      	  .setContentIntent(pendingIntent)
-      	  .build();
-      startForeground(ONGOING_NOTIFICATION, notification);
+        .setSmallIcon(notificationSmallIcon)
+        .setTicker(intent.getStringExtra(EXTRA_NOTIFICATION_TICKER))
+        .setContentTitle(notificationTitle)
+        .setContentText("Tap to shutdown.")
+        .setContentIntent(pendingIntent)
+        .build();
+      startForeground(SHUTDOWN_NOTIFICATION, notification);
     }
-    if (intent.getAction().equals(ACTION_SHUTDOWN)) {
+    else if (intent.getAction().equals(ACTION_SHUTDOWN)) {
       shutdown();
     }
+    
     return START_NOT_STICKY;
   }
 
   @Override
   public IBinder onBind(Intent intent) {
     return binder;
+  }
+  
+  @Override
+  public void onStart(ConnectedNode connectedNode) {
+  }
+
+  @Override
+  public void onShutdown(Node node) {
+  }
+  
+  @Override
+  public void onShutdownComplete(Node node) {
+  }
+
+  @Override
+  public void onError(Node node, Throwable throwable) {
   }
 
   public URI getMasterUri() {
@@ -201,6 +287,14 @@ public class NodeMainExecutorService extends Service implements NodeMainExecutor
 
   public void setMasterUri(URI uri) {
     masterUri = uri;
+  }
+
+  public String getNamespace() {
+    return namespace;
+  }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
   }
 
   public void startMaster() {

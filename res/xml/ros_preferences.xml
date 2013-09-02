@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <EditTextPreference 
+    android:key="pref_key_ros_master_uri"
+    android:summary="@string/pref_summary_ros_master_uri"
+    android:title="@string/pref_title_ros_master_uri"
+    android:dialogTitle="@string/pref_dialog_title_ros_master_uri"
+    android:defaultValue="http://localhost:11311"/>
+  <EditTextPreference 
+    android:key="pref_key_namespace"
+    android:summary="@string/pref_summary_namespace"
+    android:title="@string/pref_title_namespace"
+    android:dialogTitle="@string/pref_dialog_title_namespace"
+    android:defaultValue=""/>
+</PreferenceScreen>

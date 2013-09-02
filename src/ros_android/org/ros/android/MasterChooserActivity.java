@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.preference.PreferenceManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -52,7 +53,7 @@ public class MasterChooserActivity extends Activity {
    * The key with which the last used {@link URI} will be stored as a
    * preference.
    */
-  private static final String PREFS_KEY_NAME = "URI_KEY";
+  private static final String PREFS_KEY_MASTER_URI = "pref_key_ros_master_uri";
 
   /**
    * Package name of the QR code reader used to scan QR codes.
@@ -70,9 +71,10 @@ public class MasterChooserActivity extends Activity {
     uriText = (EditText) findViewById(R.id.master_chooser_uri);
     // Get the URI from preferences and display it. Since only primitive types
     // can be saved in preferences the URI is stored as a string.
-    masterUri =
-        getPreferences(MODE_PRIVATE).getString(PREFS_KEY_NAME,
-            NodeConfiguration.DEFAULT_MASTER_URI.toString());
+    SharedPreferences preferences = 
+      PreferenceManager.getDefaultSharedPreferences(this);
+    masterUri = preferences.getString(PREFS_KEY_MASTER_URI,
+      NodeConfiguration.DEFAULT_MASTER_URI.toString());
     uriText.setText(masterUri);
   }
 
@@ -108,8 +110,10 @@ public class MasterChooserActivity extends Activity {
 
     // If the displayed URI is valid then pack that into the intent.
     masterUri = userUri;
-    SharedPreferences.Editor editor = getPreferences(MODE_PRIVATE).edit();
-    editor.putString(PREFS_KEY_NAME, masterUri);
+    SharedPreferences preferences = 
+      PreferenceManager.getDefaultSharedPreferences(this);
+    SharedPreferences.Editor editor = preferences.edit();
+    editor.putString(PREFS_KEY_MASTER_URI, masterUri);
     editor.commit();
     // Package the intent to be consumed by the calling activity.
     Intent intent = new Intent();

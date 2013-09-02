@@ -3,9 +3,15 @@
   <string name="qr_code">Scan</string>
   <string name="master_uri_hint">http://localhost:11311/</string>
   <string name="new_master">New Master</string>
-  <string name="master_prompt">Please set hostname and port of the ROS master.</string>
+  <string name="master_prompt">Please set hostname / host IP and port of the ROS master.</string>
   <string name="master_host_hint">localhost</string>
   <string name="master_protocol">http://</string>
   <string name="master_port_hint">11311</string>
   <string name="master_connect">Connect</string>
+  <string name="pref_title_ros_master_uri">ROS Master URI</string>
+  <string name="pref_summary_ros_master_uri">URI of the ROS master node</string>
+  <string name="pref_dialog_title_ros_master_uri">Enter a valid URI pointing to the ROS master</string>
+  <string name="pref_title_namespace">Namespace</string>
+  <string name="pref_summary_namespace">Namespace of the ROS node</string>
+  <string name="pref_dialog_title_namespace">Enter the namespace of the ROS node</string>
 </resources>

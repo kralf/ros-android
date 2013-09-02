@@ -24,49 +24,53 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.widget.Toast;
+
 import org.ros.exception.RosRuntimeException;
 import org.ros.node.NodeMain;
 import org.ros.node.NodeMainExecutor;
+
+import org.ros.android.NodeMainExecutorServiceListener;
+import org.ros.android.NodeMainExecutorServiceConnection;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
+ * @author ralf.kaestner@gmail.com (Ralf Kaestner)
  */
-public abstract class Activity extends android.app.Activity {
+public abstract class Activity
+    extends android.app.Activity
+    implements NodeMainExecutorServiceListener {
 
   private static final int MASTER_CHOOSER_REQUEST_CODE = 0;
 
-  private final ServiceConnection nodeMainExecutorServiceConnection;
+  private final NodeMainExecutorServiceConnection
+    nodeMainExecutorServiceConnection;
   private final String notificationTicker;
   private final String notificationTitle;
 
   private NodeMainExecutorService nodeMainExecutorService;
 
-  private final class NodeMainExecutorServiceConnection implements ServiceConnection {
+  private final class ServiceConnection
+      extends NodeMainExecutorServiceConnection {
+    ServiceConnection(NodeMainExecutorServiceListener listener) {
+      super(listener);
+    }
+      
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
-      nodeMainExecutorService = ((NodeMainExecutorService.LocalBinder) binder).getService();
-      nodeMainExecutorService.addListener(new NodeMainExecutorServiceListener() {
-        @Override
-        public void onShutdown(NodeMainExecutorService nodeMainExecutorService) {
-          Activity.this.finish();
-        }
-      });
+      super.onServiceConnected(name, binder);
       startMasterChooser();
     }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-    }
   };
-
+  
   protected Activity(String notificationTicker, String notificationTitle) {
     super();
     this.notificationTicker = notificationTicker;
     this.notificationTitle = notificationTitle;
-    nodeMainExecutorServiceConnection = new NodeMainExecutorServiceConnection();
+    nodeMainExecutorServiceConnection =
+      new NodeMainExecutorServiceConnection(this);
   }
 
   @Override
@@ -78,12 +82,14 @@ public abstract class Activity extends android.app.Activity {
   private void startNodeMainExecutorService() {
     Intent intent = new Intent(this, NodeMainExecutorService.class);
     intent.setAction(NodeMainExecutorService.ACTION_START);
-    intent.putExtra(NodeMainExecutorService.EXTRA_NOTIFICATION_TICKER, notificationTicker);
-    intent.putExtra(NodeMainExecutorService.EXTRA_NOTIFICATION_TITLE, notificationTitle);
+    intent.putExtra(NodeMainExecutorService.EXTRA_NOTIFICATION_TICKER,
+      notificationTicker);
+    intent.putExtra(NodeMainExecutorService.EXTRA_NOTIFICATION_TITLE,
+      notificationTitle);
     startService(intent);
-    Preconditions.checkState(
-        bindService(intent, nodeMainExecutorServiceConnection, BIND_AUTO_CREATE),
-        "Failed to bind NodeMainExecutorService.");
+    Preconditions.checkState(bindService(intent,
+      nodeMainExecutorServiceConnection, BIND_AUTO_CREATE),
+      "Failed to bind NodeMainExecutorService.");
   }
 
   @Override
@@ -131,6 +137,16 @@ public abstract class Activity extends android.app.Activity {
     super.startActivityForResult(intent, requestCode);
   }
 
+  public void onConnect(NodeMainExecutorService service) {
+  }
+
+  public void onDisconnect(NodeMainExecutorService service) {
+  }
+  
+  public void onShutdown(NodeMainExecutorService service) {
+    finish();
+  }
+  
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);

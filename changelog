@@ -1,3 +1,9 @@
+ros-android (0.1-16) lucid; urgency=low
+
+  * Removed inoperable callbacks from NodeMainExecutorServiceListener
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 03 Sep 2013 14:00:00 +0100
+
 ros-android (0.1-15) lucid; urgency=low
 
   * Removed id of LinearLayout in master_chooser_activity.xml

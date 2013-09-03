@@ -32,6 +32,8 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import org.ros.RosCore;
@@ -155,7 +157,15 @@ public class NodeMainExecutorService
 
   @Override
   public void shutdown() {
-    signalOnShutdown();
+    listeners.signal(new SignalRunnable<NodeMainExecutorServiceListener>() {
+      @Override
+      public void run(NodeMainExecutorServiceListener
+          nodeMainExecutorServiceListener) {
+        nodeMainExecutorServiceListener.onShutdown(
+          NodeMainExecutorService.this);
+      }
+    });
+    
     // NOTE(damonkohler): This may be called multiple times. Shutting down a
     // NodeMainExecutor multiple times is safe. It simply calls shutdown on all
     // NodeMains.
@@ -211,17 +221,6 @@ public class NodeMainExecutorService
   
   public void addListener(NodeMainExecutorServiceListener listener) {
     listeners.add(listener);
-  }
-
-  private void signalOnShutdown() {
-    listeners.signal(new SignalRunnable<NodeMainExecutorServiceListener>() {
-      @Override
-      public void run(NodeMainExecutorServiceListener
-          nodeMainExecutorServiceListener) {
-        nodeMainExecutorServiceListener.onShutdown(
-          NodeMainExecutorService.this);
-      }
-    });
   }
 
   @Override

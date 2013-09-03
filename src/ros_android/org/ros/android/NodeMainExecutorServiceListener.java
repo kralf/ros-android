@@ -16,6 +16,9 @@
 
 package org.ros.android;
 
+import org.ros.node.Node;
+import org.ros.node.ConnectedNode;
+
 /**
  * @author damonkohler@google.com (Damon Kohler)
  */
@@ -25,7 +28,5 @@ public interface NodeMainExecutorServiceListener {
    * @param nodeMainExecutorService the {@link NodeMainExecutorService}
    * that was shut down
    */
-  public void onConnect(NodeMainExecutorService service);
-  public void onDisconnect(NodeMainExecutorService service);
   public void onShutdown(NodeMainExecutorService service);
 }

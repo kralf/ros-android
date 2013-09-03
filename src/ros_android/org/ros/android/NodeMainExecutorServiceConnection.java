@@ -19,6 +19,10 @@ package org.ros.android;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 import android.os.IBinder;
+import android.util.Log;
+
+import org.ros.node.Node;
+import org.ros.node.ConnectedNode;
 
 import org.ros.android.NodeMainExecutorService;
 import org.ros.android.NodeMainExecutorServiceListener;
@@ -49,19 +53,6 @@ public class NodeMainExecutorServiceConnection implements ServiceConnection {
     }
 
     service.addListener(new NodeMainExecutorServiceListener() {
-      @Override
-      public void onConnect(NodeMainExecutorService nodeMainExecutorService) {
-        if (listener != null)
-          listener.onConnect(service);
-      }
-      
-      @Override
-      public void onDisconnect(NodeMainExecutorService
-          nodeMainExecutorService) {
-        if (listener != null)
-          listener.onDisconnect(service);
-      }
-
       @Override
       public void onShutdown(NodeMainExecutorService nodeMainExecutorService) {
         if (listener != null)

@@ -1,3 +1,9 @@
+ros-android (0.1-17) lucid; urgency=low
+
+  * Externalized MasterChooserDialogFragmentListener
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 04 Sep 2013 07:50:00 +0100
+
 ros-android (0.1-16) lucid; urgency=low
 
   * Removed inoperable callbacks from NodeMainExecutorServiceListener

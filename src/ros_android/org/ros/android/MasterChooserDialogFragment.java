@@ -38,6 +38,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.ros.android.MasterChooserDialogFragmentListener;
+
 /**
  * Allows the user to configue the master {@link URI} via a
  * {@link DialogFragment}.
@@ -53,18 +55,13 @@ public class MasterChooserDialogFragment extends DialogFragment {
   private static final String PREFS_KEY_NAMESPACE = "pref_key_namespace";
 
   private URI masterUri = NodeConfiguration.DEFAULT_MASTER_URI;
-  private String namespace = "";
+  private String namespace;
   
   private View view;
   private EditText hostEditText;
   private EditText portEditText;
   
-  public interface Listener {
-    public void onConnectClick(MasterChooserDialogFragment dialog);
-    public void onCancelClick(MasterChooserDialogFragment dialog);
-  }
-  
-  private Listener listener = null;
+  private MasterChooserDialogFragmentListener listener;
   
   public URI getMasterUri() {
     return masterUri;
@@ -113,7 +110,7 @@ public class MasterChooserDialogFragment extends DialogFragment {
     });
 
     try {
-      listener = (Listener)getActivity();
+      listener = (MasterChooserDialogFragmentListener)getActivity();
     } catch (ClassCastException exception) {
       listener = null;
     }

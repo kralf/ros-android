@@ -1,5 +1,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
   <EditTextPreference 
+    android:key="pref_key_node_name"
+    android:summary="@string/pref_summary_node_name"
+    android:title="@string/pref_title_node_name"
+    android:dialogTitle="@string/pref_dialog_title_node_name"
+    android:defaultValue="ros_android"/>
+  <EditTextPreference 
     android:key="pref_key_ros_master_uri"
     android:summary="@string/pref_summary_ros_master_uri"
     android:title="@string/pref_title_ros_master_uri"

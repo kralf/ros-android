@@ -1,3 +1,9 @@
+ros-android (0.1-18) lucid; urgency=low
+
+  * Added preference setting for node name
+  
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 13 Jan 2014 09:53:00 +0100
+
 ros-android (0.1-17) lucid; urgency=low
 
   * Externalized MasterChooserDialogFragmentListener

@@ -35,6 +35,6 @@ public class PreferenceFragment
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    addPreferencesFromResource(org.ros.android.R.xml.ros_preferences);
+    addPreferencesFromResource(org.ros.android.R.xml.preferences_ros);
   }
 }
